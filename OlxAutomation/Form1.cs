@@ -20,12 +20,14 @@ namespace OlxAutomation
         IWebDriver driver;
         string lastmessage;
         ChromeOptions options = new ChromeOptions();
-
+        ChromeDriverService service = ChromeDriverService.CreateDefaultService();
+        
         List<Anuncio> lstanounces = new List<Anuncio>();
 
 
         public Form1()
         {
+            service.HideCommandPromptWindow = true;
             options.AddArguments("--headless");
             InitializeComponent();
         }
@@ -57,7 +59,7 @@ namespace OlxAutomation
             again:
             try
             {
-                driver = new ChromeDriver(options);
+                driver = new ChromeDriver(service,options);
                 driver.Navigate().GoToUrl("https://sp.olx.com.br/sao-paulo-e-regiao/zona-norte/santana");
 
                 lst = driver.FindElements(By.ClassName("OLXad-list-link")).ToList();
