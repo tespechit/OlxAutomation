@@ -8,7 +8,29 @@ namespace OlxAutomation
 {
     class Anuncio
     {
-        public string Title  { get; set; }
+        public int Id { get; set; }
+        public string URL  { get; set; }
         public string Texto { get; set; }
+        public string Fabricante { get; set; }
+        public string Modelo { get; set; }
+        public float Valor { get; set; }
+        public DateTime AddDate { get; set; }
+        public DateTime EndDate { get; set; }
+
+
+        private void GetValue()
+        {
+
+        }
+
+        private void GetFabricante()
+        {
+
+        }
+
+        private void GetModelo()
+        {
+
+        }
     }
 }

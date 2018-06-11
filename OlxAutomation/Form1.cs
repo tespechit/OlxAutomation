@@ -21,6 +21,8 @@ namespace OlxAutomation
         string lastmessage;
         ChromeOptions options = new ChromeOptions();
         ChromeDriverService service = ChromeDriverService.CreateDefaultService();
+
+        string lastUrl;
         
         List<Anuncio> lstanounces = new List<Anuncio>();
 
@@ -51,6 +53,8 @@ namespace OlxAutomation
 
         }
 
+
+
         private void GetAnounces()
         {
             List<IWebElement> lst = new List<IWebElement>();
@@ -59,46 +63,213 @@ namespace OlxAutomation
             again:
             try
             {
-                driver = new ChromeDriver(service,options);
-                driver.Navigate().GoToUrl("https://sp.olx.com.br/sao-paulo-e-regiao/zona-norte/santana");
+                //driver = new ChromeDriver(service,options);
+                driver = new ChromeDriver();
+                driver.Navigate().GoToUrl("https://sp.olx.com.br/sao-paulo-e-regiao/zona-norte/santana/celulares");
 
                 lst = driver.FindElements(By.ClassName("OLXad-list-link")).ToList();
 
+                lastUrl = lst[0].GetAttribute("href");
+
                 foreach (IWebElement elem in lst)
                 {
-                    listmessages.Add(new Anuncio { Title = elem.GetAttribute("href"), Texto = elem.Text });
-                }
-
-                foreach (Anuncio msg in listmessages)
-                {
-                    bool alreadyExists = lstanounces.Any(x => x.Title == msg.Title);
-
-                    if (!alreadyExists)
+                    if(lastUrl == elem.GetAttribute("href"))
                     {
-                        lstanounces.Add(msg);
-                        SendMail(msg.Texto, msg.Title);
+                        break;
+                    }
+                    Anuncio anuncio = new Anuncio();
+
+                    anuncio.URL = elem.GetAttribute("href");
+                    anuncio.Texto = elem.Text;
+
+                    //driver.FindElement(By.CssSelector("body")).SendKeys(System.Windows.Forms.Keys.Control + "t");
+                    ((IJavaScriptExecutor)driver).ExecuteScript("window.open();");
+                    driver.SwitchTo().Window(driver.WindowHandles.Last());
+                    driver.Navigate().GoToUrl(anuncio.URL);
+
+                    Thread.Sleep(1000);
+                    try
+                    {
+                        string valor = driver.FindElement(By.ClassName("actual-price")).Text;
+                        valor = valor.Replace("R$", string.Empty);
+                        valor = valor.Replace("R", string.Empty);
+                        valor = valor.Replace("$", string.Empty);
+                        valor = valor.Replace(" ", string.Empty);
+
+                        anuncio.Valor = float.Parse(valor);
+                    }
+                    catch(Exception ex)
+                    {
+
                     }
 
 
+                    anuncio.Texto = driver.FindElement(By.Id("ad_title")).Text.ToUpper();
+
+                    string[] modelist = {
+                        "APPLE WATCH",
+                        "IPHONE X 256GB",
+                        "IPHONE X 128GB",
+                        "IPHONE X 64GB",
+                        "IPHONE X 32GB",
+                        "IPHONE 4",
+                        "IPHONE 5 SE 128GB",
+                        "IPHONE 5 SE 64GB",
+                        "IPHONE 5 SE 32GB",
+                        "IPHONE 5S 16GB",
+                        "IPHONE 5S 32GB",
+                        "IPHONE 5S 64GB",
+                        "IPHONE 5S",
+                        "IPHONE 6S 128GB",
+                        "IPHONE 6S 128GB",
+                        "IPHONE 6S 64GB",
+                        "IPHONE 6S 32GB",
+                        "IPHONE 6S",
+                        "IPHONE 6",
+                        "IPHONE 7 128GB",
+                        "IPHONE 7 64GB",
+                        "IPHONE 7 32GB",
+                        "IPHONE 7 PLUS 128GB",
+                        "IPHONE 7 PLUS 64GB",
+                        "IPHONE 7 PLUS 32GB",
+
+                        "MOTOG 4 PLAY",
+                        "MOTO G 4 PLAY",
+                        "MOTO G4 PLAY",
+                        "MOTO G4",
+                        "MOTO G5",
+                        "MOTO X FORCE 64GB",
+                        "MOTO G 5",
+                        "GALAXY S8",
+                        "GALAXY S7",
+                        "GALAXY S6",
+                        "GALAXY S5",
+                        "GALAXY S4",
+                        "GALAXY A5",
+                        "A5",
+                        "GALAXY J7 PRIME",
+                        "GALAXY J7",
+                        "J7 NEO",
+                        "J7",
+                        "SAMSUNG S8",
+                        "SAMSUNG S7",
+                        "SAMSUNG S6",
+                        "SAMSUNG S5",
+                        "SONY XPERIA Z2",
+                        "XPERIA Z2",
+                        "QUANTUM MUV",
+                        "XIAOMI MI BAND 1S",
+                        "XIAOMI",
+                        "Z2",
+                        "SONY",
+                        "MOTO G3",
+                        "J5 DUAL CHIP",
+                        "J3",
+                        "J5",
+                        "J2",
+                        "SAMSUNG",
+                        "CCE",
+                        "MOTO Z2",
+                        "MOTO X2",
+                        "S7 EDGE",
+                        "MOTOROLA",
+                        "APPLE",
+                        "P20",
+                        "MODEM VIVO WI FI",
+                        "MODEM",
+                        "GEAR FIT2 PRO",
+                        "IDENTIFICADOR DE CHAMADAS"
+                    };
+
+                    int pos = -1;
+                    string chosenmodel = "";
+                    bool hasfound = false;
+                    foreach(string model in modelist)
+                    {
+                        int container = anuncio.Texto.IndexOf(model);
+                        pos = anuncio.Texto.IndexOf(model);
+                        //implementar lógica para caso o anuncio contenha mais de um item na descrição
+                        if(pos > -1 && !hasfound)
+                        {
+                            anuncio.Modelo = model;
+                            hasfound = true;
+                            break;
+                        }
+                        
+                    }
+
+
+
+
+                    if(pos == -1)
+                    {
+                        //## try with text ToDo
+                        anuncio.Texto = driver.FindElement(By.ClassName("OLXad-description")).Text.ToUpper();
+
+                        foreach (string model in modelist)
+                        {
+                            int container = anuncio.Texto.IndexOf(model);
+                            pos = anuncio.Texto.IndexOf(model);
+                            //implementar lógica para caso o anuncio contenha mais de um item na descrição
+                            if (pos > -1 && !hasfound)
+                            {
+                                anuncio.Modelo = model;
+                                hasfound = true;
+                                break;
+                            }
+
+                        }
+
+                    }
+                    else
+                    {
+                        anuncio.Modelo = chosenmodel;
+                    }
+
+                    if(anuncio.Modelo == null)
+                    {
+                        MessageBox.Show("Modelo não identificado!");
+                    }
+
+                    ((IJavaScriptExecutor)driver).ExecuteScript("window.close();");
+                    driver.SwitchTo().Window(driver.WindowHandles.First());
+
+                    listmessages.Add(anuncio);
+
                 }
 
 
-                string message = listmessages.Last().Title;
 
-                if (lastmessage == message)
+                foreach (Anuncio msg in listmessages)
                 {
-                    //MessageBox.Show("Não há novos anúncios");
-                }
-                else
-                {
+                    //bool alreadyExists = lstanounces.Any(x => x.Title == msg.Title);
 
-                    lastmessage = listmessages.Last().Title;
+                    //if (!alreadyExists)
+                    //{
+                    //    lstanounces.Add(msg);
+                    //    SendMail(msg.Texto, msg.Title);
+                    //}
+
+
                 }
+
+
+                //string message = listmessages.Last().Title;
+
+                //if (lastmessage == message)
+                //{
+                //    //MessageBox.Show("Não há novos anúncios");
+                //}
+                //else
+                //{
+
+                //    lastmessage = listmessages.Last().Title;
+                //}
 
                 driver.Close();
                 driver.Dispose();
             }
-            catch
+            catch(Exception ex)
             {
                 //driver.Close();
                 driver.Dispose();
@@ -154,6 +325,11 @@ namespace OlxAutomation
             {
 
             }
+
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
 
         }
     }
