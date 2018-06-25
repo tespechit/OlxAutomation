@@ -68,15 +68,20 @@ namespace OlxAutomation
                 driver.Navigate().GoToUrl("https://sp.olx.com.br/sao-paulo-e-regiao/zona-norte/santana/celulares");
 
                 lst = driver.FindElements(By.ClassName("OLXad-list-link")).ToList();
+                string urlContainer = lst[0].GetAttribute("href");
 
+                if(urlContainer == lastUrl)
+                {
+
+                }
                 lastUrl = lst[0].GetAttribute("href");
 
                 foreach (IWebElement elem in lst)
                 {
-                    if(lastUrl == elem.GetAttribute("href"))
-                    {
-                        break;
-                    }
+                    //if(lastUrl == elem.GetAttribute("href"))
+                    //{
+                    //    break;
+                    //}
                     Anuncio anuncio = new Anuncio();
 
                     anuncio.URL = elem.GetAttribute("href");
@@ -313,7 +318,7 @@ namespace OlxAutomation
                 client.DeliveryMethod = SmtpDeliveryMethod.Network;
                 client.UseDefaultCredentials = false;
                 client.EnableSsl = true;
-                client.Credentials = new System.Net.NetworkCredential("ribeiro.rs@gmail.com", "c299792458MS");
+                client.Credentials = new System.Net.NetworkCredential("ribeiro.rs@gmail.com", "");
                 objeto_mail.From = new MailAddress("ribeiro.rs@gmail.com");
                 objeto_mail.To.Add(new MailAddress("ribeiro.rs@gmail.com"));
                 objeto_mail.Subject = mensagemtratada;
