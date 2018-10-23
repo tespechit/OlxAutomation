@@ -318,7 +318,7 @@ namespace OlxAutomation
                 client.DeliveryMethod = SmtpDeliveryMethod.Network;
                 client.UseDefaultCredentials = false;
                 client.EnableSsl = true;
-                client.Credentials = new System.Net.NetworkCredential("ribeiro.rs@gmail.com", "");
+                client.Credentials = new System.Net.NetworkCredential("ribeiro.rs@gmail.com", ""); //Colocar a senha aqui
                 objeto_mail.From = new MailAddress("ribeiro.rs@gmail.com");
                 objeto_mail.To.Add(new MailAddress("ribeiro.rs@gmail.com"));
                 objeto_mail.Subject = mensagemtratada;
